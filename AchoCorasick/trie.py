@@ -63,11 +63,19 @@ class ACTrie:
             if letter in current.children:
                 current = current.children[letter]
                 result.extend(current.outputs)
+
+            # fixme here we need to check all fails up to root
             else:
-                current = self.root
-                if letter in current.children:
-                    current = current.children[letter]
-                    result.extend(current.outputs)
+                current = current.fail_node
+                while current is not None and letter not in current.children:
+                    current = current.fail_node
+                # went up to rrot
+                if current is None:
+                    current = self.root
+                    continue
+
+                current = current.children[letter]
+                result.extend(current.outputs)
 
         return result
 
@@ -137,16 +145,18 @@ if __name__ == '__main__':
     # words = ['asd', 'as', 'a', 'bdd']
     # words = ['c', 'cc', 'ccc', 'cccc']
     # words = []
-    words = ['aab']
+    # words = ['aab']
     # words = ['c', 'dadac']
-    # words = ['a', 'ab', 'bc', 'aab', 'aac', 'bd']
+    words = ['a', 'ab', 'bc', 'aab', 'aac', 'bd']
 
     trie._build(words=words)
     trie._build_fails()
     trie.print(trie.root)
 
-    string = 'aaab'
+    # string = 'aaab'
     # string = 'abcabcabc'
+    string = 'bcaab'
 
-    matches = trie._find_matching2(string)
+    matches = trie._find_matching(string)
+    # matches = trie._find_matching2(string)
     print(matches)
