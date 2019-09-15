@@ -71,6 +71,27 @@ class ACTrie:
 
         return result
 
+    def _find_matching2(self, string):
+        """"""
+        result = []
+        current = self.root
+
+        for letter in string:
+            # print(80 * '-')
+            # print(f'Started {letter}')
+            while current is not None and letter not in current.children:
+                print('in while')
+                current = current.fail_node
+            if current is None:
+                # print('node is None')
+                current = self.root
+                continue
+            # print(f'{current}')
+            current = current.children[letter]
+            # print(f'{current}')
+            result.extend(current.outputs)
+        return result
+
 
 class Node:
 
@@ -88,7 +109,7 @@ class Node:
 
     def __str__(self):
         return f'Node: letter: `{self.letter}` ' \
-               f'is_word: `{self.is_word}`, outputs: `{self.outputs}` ' \
+               f'outputs: `{self.outputs}` ' \
                f'fail_node: {getattr(self.fail_node, "letter", None)}'
 
     def is_root(self):
@@ -116,7 +137,7 @@ if __name__ == '__main__':
     # words = ['asd', 'as', 'a', 'bdd']
     # words = ['c', 'cc', 'ccc', 'cccc']
     # words = []
-    words = ['a', 'b', 'c']
+    words = ['aab']
     # words = ['c', 'dadac']
     # words = ['a', 'ab', 'bc', 'aab', 'aac', 'bd']
 
@@ -124,8 +145,8 @@ if __name__ == '__main__':
     trie._build_fails()
     trie.print(trie.root)
 
-    # string = 'bcaab'
-    string = 'abcabcabc'
+    string = 'aaab'
+    # string = 'abcabcabc'
 
-    matches = trie._find_matching(string)
+    matches = trie._find_matching2(string)
     print(matches)
