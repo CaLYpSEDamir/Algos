@@ -4,18 +4,17 @@ from queue import Queue
 class ACTrie:
     """Aho Corasick Trie"""
 
-    def __init__(self, root):
-        self.root = root
+    def __init__(self):
+        self.root = Node(letter='', output='')
         self.q = Queue()
 
-    def _build(self, words):
+    def _build(self, patterns):
 
-        for word in words:
+        for word in patterns:
             node = self.root
             for i, letter in enumerate(word, start=1):
-                is_word = i == len(word)
-                output = word[:i]
-                node = node.append_letter(letter, is_word, output)
+                output = word if i == len(word) else None
+                node = node.append_letter(letter, output)
 
     def print(self, node):
         """"""
@@ -54,7 +53,12 @@ class ACTrie:
                         # go to upper fail node
                         fail_node = fail_node.fail_node
 
-    def _find_matching(self, string):
+    def build(self, patterns):
+        """"""
+        self._build(patterns)
+        self._build_fails()
+
+    def find_matching(self, string):
         """"""
         result = []
         current = self.root
@@ -69,7 +73,7 @@ class ACTrie:
                 current = current.fail_node
                 while current is not None and letter not in current.children:
                     current = current.fail_node
-                # went up to rrot
+                # went up to root
                 if current is None:
                     current = self.root
                     continue
@@ -79,38 +83,15 @@ class ACTrie:
 
         return result
 
-    def _find_matching2(self, string):
-        """"""
-        result = []
-        current = self.root
-
-        for letter in string:
-            # print(80 * '-')
-            # print(f'Started {letter}')
-            while current is not None and letter not in current.children:
-                print('in while')
-                current = current.fail_node
-            if current is None:
-                # print('node is None')
-                current = self.root
-                continue
-            # print(f'{current}')
-            current = current.children[letter]
-            # print(f'{current}')
-            result.extend(current.outputs)
-        return result
-
 
 class Node:
 
-    def __init__(self, level, letter, is_word, output=None):
+    def __init__(self, letter, output=None):
 
-        self.level = level
         self.letter = letter
         self.outputs = []
-        self.is_word = is_word
-        self.children = {}
-        self.fail_node = None
+        # self.children = {}
+        # self.fail_node = None
 
         if output:
             self.outputs.append(output)
@@ -123,15 +104,14 @@ class Node:
     def is_root(self):
         return self.letter == ''
 
-    def append_letter(self, letter, is_word=False, output=None) -> 'Node':
+    def append_letter(self, letter, output=None) -> 'Node':
 
         if letter in self.children:
             child = self.children[letter]
-            if is_word:
-                child.is_word = True
+            if output:
                 child.outputs.append(output)
         else:
-            child = Node(level=self.level+1, letter=letter, is_word=is_word, output=output if is_word else None)
+            child = Node(letter=letter, output=output or None)
             self.children[letter] = child
 
         return child
@@ -139,18 +119,16 @@ class Node:
 
 if __name__ == '__main__':
 
-    root = Node(level=0, letter='', is_word=False, output='')
-    trie = ACTrie(root=root)
 
     # words = ['asd', 'as', 'a', 'bdd']
     # words = ['c', 'cc', 'ccc', 'cccc']
     # words = []
-    # words = ['aab']
+    words = ['aab', 'aab']
     # words = ['c', 'dadac']
-    words = ['a', 'ab', 'bc', 'aab', 'aac', 'bd']
+    # words = ['a', 'ab', 'bc', 'aab', 'aac', 'bd']
 
-    trie._build(words=words)
-    trie._build_fails()
+    trie = ACTrie()
+    trie.build(patterns=words)
     trie.print(trie.root)
 
     # string = 'aaab'
@@ -158,5 +136,4 @@ if __name__ == '__main__':
     string = 'bcaab'
 
     matches = trie._find_matching(string)
-    # matches = trie._find_matching2(string)
     print(matches)
