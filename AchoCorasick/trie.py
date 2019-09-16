@@ -5,7 +5,7 @@ class ACTrie:
     """Aho Corasick Trie"""
 
     def __init__(self):
-        self.root = Node(letter='', output='')
+        self.root = Node(output='')
         self.q = Queue()
 
     def _build(self, patterns):
@@ -32,21 +32,21 @@ class ACTrie:
         while not self.q.empty():
             current = self.q.get()
 
-            for child in current.children.values():
+            for letter, child in current.children.items():
                 self.q.put(child)
                 # find a fail for child
                 fail_node = current.fail_node
 
                 while True:
                     # fail_node has an appropriate letter
-                    if child.letter in fail_node.children:
-                        child.fail_node = fail_node.children[child.letter]
+                    if letter in fail_node.children:
+                        child.fail_node = fail_node.children[letter]
                         child.outputs.extend(child.fail_node.outputs)
                         break
 
                     # does not have letter
                     # if root
-                    if fail_node.is_root():
+                    if fail_node.fail_node is None:
                         child.fail_node = fail_node
                         break
                     else:
@@ -86,23 +86,19 @@ class ACTrie:
 
 class Node:
 
-    def __init__(self, letter, output=None):
+    def __init__(self, output=None):
 
-        self.letter = letter
         self.outputs = []
-        # self.children = {}
-        # self.fail_node = None
+        self.children = {}
+        self.fail_node = None
 
         if output:
             self.outputs.append(output)
 
     def __str__(self):
-        return f'Node: letter: `{self.letter}` ' \
+        return f'Node: ' \
                f'outputs: `{self.outputs}` ' \
                f'fail_node: {getattr(self.fail_node, "letter", None)}'
-
-    def is_root(self):
-        return self.letter == ''
 
     def append_letter(self, letter, output=None) -> 'Node':
 
@@ -111,7 +107,7 @@ class Node:
             if output:
                 child.outputs.append(output)
         else:
-            child = Node(letter=letter, output=output or None)
+            child = Node(output=output or None)
             self.children[letter] = child
 
         return child
@@ -135,5 +131,5 @@ if __name__ == '__main__':
     # string = 'abcabcabc'
     string = 'bcaab'
 
-    matches = trie._find_matching(string)
+    matches = trie.find_matching(string)
     print(matches)
