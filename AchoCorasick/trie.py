@@ -1,4 +1,5 @@
 from queue import Queue
+from collections import deque
 
 
 class ACTrie:
@@ -6,7 +7,8 @@ class ACTrie:
 
     def __init__(self):
         self.root = Node(output='')
-        self.q = Queue()
+        # self.q = Queue()
+        self.q = deque()
 
     def _build(self, patterns):
 
@@ -19,96 +21,111 @@ class ACTrie:
     def print(self, node):
         """"""
         print(node)
-        for child in node.children.values():
+        for child in node.c.values():
             self.print(child)
 
     def _build_fails(self):
         """"""
         # root children to queue
-        for child in self.root.children.values():
-            child.fail_node = self.root
-            self.q.put(child)
+        q = self.q
+        for child in self.root.c.values():
+            child.f = self.root
+            # q.put(child)
+            q.append(child)
 
-        while not self.q.empty():
-            current = self.q.get()
+        # while not q.empty():
+        while len(q):
+            # current = q.get()
+            current = q.popleft()
 
-            for letter, child in current.children.items():
-                self.q.put(child)
+            for letter, child in current.c.items():
+                # q.put(child)
+                q.append(child)
+
                 # find a fail for child
-                fail_node = current.fail_node
+                fail_node = current.f
 
                 while True:
                     # fail_node has an appropriate letter
-                    if letter in fail_node.children:
-                        child.fail_node = fail_node.children[letter]
-                        child.outputs.extend(child.fail_node.outputs)
+                    if letter in fail_node.c:
+                        child.f = fail_node.c[letter]
+                        child.o.extend(child.f.o)
                         break
 
                     # does not have letter
                     # if root
-                    if fail_node.fail_node is None:
-                        child.fail_node = fail_node
+                    if fail_node.f is None:
+                        child.f = fail_node
                         break
                     else:
                         # go to upper fail node
-                        fail_node = fail_node.fail_node
+                        fail_node = fail_node.f
 
     def build(self, patterns):
         """"""
         self._build(patterns)
         self._build_fails()
 
+    # fixme maybe as generator
     def find_matching(self, string):
         """"""
+        # from collections import Counter
+        # result = Counter()
         result = []
         current = self.root
 
         for letter in string:
-            if letter in current.children:
-                current = current.children[letter]
-                result.extend(current.outputs)
+            if letter in current.c:
+                current = current.c[letter]
+                result.extend(current.o)
+                # result.update(current.o)
 
             # fixme here we need to check all fails up to root
             else:
-                current = current.fail_node
-                while current is not None and letter not in current.children:
-                    current = current.fail_node
+                current = current.f
+                while current is not None and letter not in current.c:
+                    current = current.f
                 # went up to root
                 if current is None:
                     current = self.root
                     continue
 
-                current = current.children[letter]
-                result.extend(current.outputs)
+                current = current.c[letter]
+                result.extend(current.o)
+                # result.update(current.o)
 
         return result
+        # from collections import Counter
+        # return Counter(result)
 
 
 class Node:
 
+    __slots__ = ('o', 'c', 'f')
+
     def __init__(self, output=None):
 
-        self.outputs = []
-        self.children = {}
-        self.fail_node = None
+        self.o = []
+        self.c = {}
+        self.f = None
 
         if output:
-            self.outputs.append(output)
+            self.o.append(output)
 
     def __str__(self):
         return f'Node: ' \
-               f'outputs: `{self.outputs}` ' \
-               f'fail_node: {getattr(self.fail_node, "letter", None)}'
+               f'outputs: `{self.o}` ' \
+               f'fail_node: {getattr(self.f, "letter", None)}'
 
     def append_letter(self, letter, output=None) -> 'Node':
 
-        if letter in self.children:
-            child = self.children[letter]
+        if letter in self.c:
+            child = self.c[letter]
             if output:
-                child.outputs.append(output)
+                child.o.append(output)
         else:
             child = Node(output=output or None)
-            self.children[letter] = child
+            self.c[letter] = child
 
         return child
 
