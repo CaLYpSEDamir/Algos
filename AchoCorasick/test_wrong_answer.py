@@ -3,7 +3,7 @@ import re
 import sys
 import time
 import math
-import random
+import bisect
 from collections import defaultdict, Counter
 
 from memory_profiler import profile
@@ -14,8 +14,8 @@ from trie import ACTrie
 # @profile
 def go():
     # file = 'test_case_1823728075410_1823728075410.txt'
-    # file = 'test_case_runtime_error_0_8652768.txt'
-    file = 'Test2_15806635_20688978289.txt'
+    file = 'test_case_runtime_error_0_8652768.txt'
+    # file = 'Test2_15806635_20688978289.txt'
 
     dnas = []
     dna_indexes = defaultdict(list)
@@ -54,7 +54,7 @@ def go():
 
     # dnas = set(dnas)
 
-    for i, (dna, start, end) in enumerate(dnas[:1000]):
+    for i, (dna, start, end) in enumerate(dnas[:100000]):
         # print(dna)
         # if i == 1000:
         #     break
@@ -74,22 +74,30 @@ def go():
         # print(combine)
         h_total = 0
         matches = trie.find_matching(dna)
+        # print(matches)
         # if len(matches) != 14:
         #     print(len(matches))
 
         cache_indexes = dict()
 
         for m in matches:  # still repeats
+            # print(dna_indexes[m])
+
             if m not in cache_indexes:
                 to_add = 0
-                for j in dna_indexes[m]:
+                st = bisect.bisect_left(dna_indexes[m], start)
+                en = bisect.bisect_left(dna_indexes[m], end)
+                for j in dna_indexes[m][st:en]:
+                # for j in dna_indexes[m]:
                     # print(m, dna_indexes[m])
-                    if start <= j <= end+1:
-                        to_add += genes_c[m] * health[j]
+                    # if start <= j <= end+1:
+                    #     to_add += genes_c[m] * health[j]
+                    to_add += genes_c[m] * health[j]
 
                 cache_indexes[m] = to_add
                 h_total += to_add
             else:
+                # print('hit')
                 h_total += cache_indexes[m]
 
                 # for g, h in zip(genes[start: end + 1], health[start: end + 1]):
@@ -106,17 +114,17 @@ def go():
         # for k in c:
         #     h_total += combine[k] * c[k]
 
-        # if min_ is None:
-        #     min_ = h_total
-        # else:
-        #     if h_total < min_:
-        #         min_ = h_total
-        #
-        # if max_ is None:
-        #     max_ = h_total
-        # else:
-        #     if h_total > max_:
-        #         max_ = h_total
+        if min_ is None:
+            min_ = h_total
+        else:
+            if h_total < min_:
+                min_ = h_total
+
+        if max_ is None:
+            max_ = h_total
+        else:
+            if h_total > max_:
+                max_ = h_total
 
     print(min_, max_)
 
