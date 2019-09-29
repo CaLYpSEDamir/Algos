@@ -18,7 +18,7 @@ def go():
     file = 'Test2_15806635_20688978289.txt'
 
     dnas = []
-    pure_dnas = set()
+    dna_indexes = defaultdict(list)
     min_ = None
     max_ = None
 
@@ -39,8 +39,12 @@ def go():
     t1 = time.time()
 
     trie = ACTrie()
-    # genes_set = set(genes)
-    trie.build(patterns=genes)
+    genes_c = Counter(genes)
+
+    for i, gen in enumerate(genes):
+        dna_indexes[gen].append(i)
+
+    trie.build(patterns=set(genes))
 
     print('after build tree', time.time() - t1)
 
@@ -51,14 +55,14 @@ def go():
     # dnas = set(dnas)
 
     for i, (dna, start, end) in enumerate(dnas[:1000]):
-        # print()
+        # print(dna)
         # if i == 1000:
         #     break
         # print('Start', dna)
 
-        combine = defaultdict(int)
-        for g, h in zip(genes[start: end + 1], health[start: end + 1]):
-            combine[g] += h
+        # combine = defaultdict(int)
+        # for g, h in zip(genes[start: end + 1], health[start: end + 1]):
+        #     combine[g] += h
 
         # for j in range(start, end + 1):
         #     combine[genes[j]] += health[j]
@@ -68,7 +72,30 @@ def go():
         #     combine[genes[j]] += health[j]
 
         # print(combine)
+        h_total = 0
         matches = trie.find_matching(dna)
+        # if len(matches) != 14:
+        #     print(len(matches))
+
+        cache_indexes = dict()
+
+        for m in matches:  # still repeats
+            if m not in cache_indexes:
+                to_add = 0
+                for j in dna_indexes[m]:
+                    # print(m, dna_indexes[m])
+                    if start <= j <= end+1:
+                        to_add += genes_c[m] * health[j]
+
+                cache_indexes[m] = to_add
+                h_total += to_add
+            else:
+                h_total += cache_indexes[m]
+
+                # for g, h in zip(genes[start: end + 1], health[start: end + 1]):
+        #     for m in matches:
+        #         if m == g:
+        #             h_total += h * genes_c[m]
         # print(len(matches))
 
         # h_total = 0
