@@ -19,13 +19,15 @@ def go():
 
     dnas = []
     dna_indexes = defaultdict(list)
+    dna_healths = defaultdict(lambda: [0])
+    # dna_healths = defaultdict(list)
     min_ = None
     max_ = None
 
     with open(file) as f:
         n = f.readline()
         genes = f.readline().rstrip().split()
-        health = list(map(int, f.readline().rstrip().split()))
+        all_healths = list(map(int, f.readline().rstrip().split()))
 
         words_cnt = int(f.readline())
 
@@ -43,6 +45,7 @@ def go():
 
     for i, gen in enumerate(genes):
         dna_indexes[gen].append(i)
+        dna_healths[gen].append(dna_healths[gen][-1] + all_healths[i])
 
     trie.build(patterns=set(genes))
 
@@ -57,33 +60,19 @@ def go():
     all_time = 0
 
     for i, (dna, start, end) in enumerate(dnas[:100000]):
-        # print(dna)
-        # if i == 1000:
-        #     break
-        # print('Start', dna)
 
-        # combine = defaultdict(int)
-        # for g, h in zip(genes[start: end + 1], health[start: end + 1]):
-        #     combine[g] += h
-
-        # for j in range(start, end + 1):
-        #     combine[genes[j]] += health[j]
-
-        # combine = Counter()
-        # for j in range(start, end + 1):
-        #     combine[genes[j]] += health[j]
-
-        # print(combine)
         h_total = 0
         matches = trie.find_matching(dna)
-        # print(matches)
-        # if len(matches) != 14:
-        #     print(len(matches))
+
+        for m in matches:
+
+
+
+        ##########################
 
         cache_indexes = dict()
 
-        for m in matches:  # still repeats
-            # print(dna_indexes[m])
+        for m in matches:
 
             if m not in cache_indexes:
                 to_add = 0
@@ -96,7 +85,7 @@ def go():
                     # print(m, dna_indexes[m])
                     # if start <= j <= end+1:
                     #     to_add += genes_c[m] * health[j]
-                    to_add += genes_c[m] * health[j]
+                    to_add += genes_c[m] * all_healths[j]
 
                 ttt = time.time()
                 all_time += (ttt -tt)
@@ -121,6 +110,7 @@ def go():
         # for k in c:
         #     h_total += combine[k] * c[k]
 
+        # fixme refactor
         if min_ is None:
             min_ = h_total
         else:
