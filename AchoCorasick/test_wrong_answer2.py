@@ -64,27 +64,62 @@ def go():
         h_total = 0
         matches = trie.find_matching(dna)
 
-        for m in matches:
-
-
-
-        ##########################
-
         cache_indexes = dict()
 
         for m in matches:
 
             if m not in cache_indexes:
+                m_list = dna_indexes[m]
+                len_m_list = len(m_list)
+
+                end_id = bisect.bisect_left(dna_indexes[m], end)
+
+                # l([5], 6) -> 1
+                if end_id == len_m_list:
+                    end_id -= 1
+                else:
+                    # l([5, 6], 6) -> 1 - normal
+
+                    e = m_list[end_id]
+
+                    if e != end:
+                        # l([7], 6) -> 0
+                        if end_id == 0:
+                            print('Skipping')
+                            continue
+                        # l([5], 6) -> 1
+                        end_id -= 1
+
+                start_id = bisect.bisect_left(dna_indexes[m], end)
+
+                # l([1], 2) -> 1
+                if start_id == len_m_list:
+                    start_id -= 1
+                else:
+                    # l([2, 3], 2) -> 0 - normal
+
+                    s = m_list[start_id]
+
+                    if s != start:
+                        # l([7], 6) -> 0
+                        if start_id == 0:
+                            print('Skipping')
+                            continue
+                        # l([5], 6) -> 1
+                        start_id -= 1
+
                 to_add = 0
-                st = bisect.bisect_left(dna_indexes[m], start)
-                en = bisect.bisect_left(dna_indexes[m], end)
 
                 tt = time.time()
-                for j in dna_indexes[m][st:en]:
+
+
+
+                # for j in dna_indexes[m][st:en]:
                 # for j in dna_indexes[m]:
                     # print(m, dna_indexes[m])
                     # if start <= j <= end+1:
                     #     to_add += genes_c[m] * health[j]
+
                     to_add += genes_c[m] * all_healths[j]
 
                 ttt = time.time()
