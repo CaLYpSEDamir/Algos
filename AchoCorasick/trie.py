@@ -12,10 +12,10 @@ class ACTrie:
 
     def _build(self, patterns):
 
-        for word in patterns:
+        for w_i, word in enumerate(patterns):
             node = self.root
             for i, letter in enumerate(word, start=1):
-                output = word if i == len(word) else None
+                output = (word, w_i) if i == len(word) else None
                 node = node.append_letter(letter, output)
 
     def print(self, node):

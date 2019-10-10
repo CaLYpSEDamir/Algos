@@ -21,12 +21,27 @@ class Node(object):
 
 
 # -------------------------------------------------------------------------------
-num_of_genes = int(input().strip())
-genes = list(input().strip().split(' '))
+# file = 'test_case_1823728075410_1823728075410.txt'
+# file = 'test_case_runtime_error_0_8652768.txt'
+file = 'Test2_15806635_20688978289.txt'
+# file = 'simple_test.txt'
 
-health = list(map(int, input().strip().split(' ')))
+dnas = []
 
-s = int(input().strip())
+with open(file) as f:
+    num_of_genes = f.readline()
+    genes = f.readline().rstrip().split()
+    health = list(map(int, f.readline().rstrip().split()))
+    n = int(f.readline())
+
+    for _ in range(n):
+        dna_l = f.readline().rstrip().split()
+        start = int(dna_l[0])
+        end = int(dna_l[1])
+        dna = dna_l[2]
+
+        dnas.append((dna, start, end))
+
 # -------------------------------------------------------------------------------
 root = Node()
 
@@ -93,9 +108,12 @@ h_tot_max = 0
 f_min = num_of_genes
 f_max = 0
 
-for a0 in range(s):
-    first, last, d = input().strip().split(' ')
-    first, last, d = [int(first), int(last), str(d)]
+# for a0 in range(s):
+#     first, last, d = input().strip().split(' ')
+#     first, last, d = [int(first), int(last), str(d)]
+
+# print(dnas)
+for (d, first, last) in dnas[:]:
 
     h_tot = get_health(d, first, last)
 
