@@ -15,7 +15,8 @@ from trie import ACTrie
 def go():
     # file = 'test_case_1823728075410_1823728075410.txt'
     # file = 'test_case_runtime_error_0_8652768.txt'
-    file = 'Test2_15806635_20688978289.txt'
+    # file = 'Test2_15806635_20688978289.txt'
+    file = 'simple_test.txt'
 
     dnas = []
     dna_indexes = defaultdict(list)
@@ -60,16 +61,22 @@ def go():
     all_time = 0
 
     for i, (dna, start, end) in enumerate(dnas[:100000]):
+        print(i, dna, start, end)
 
         h_total = 0
         matches = trie.find_matching(dna)
 
+        print(matches)
+
         cache_indexes = dict()
 
         for m in matches:
+            print('m', m)
+            # if m not in cache_indexes:
+            if 1:
 
-            if m not in cache_indexes:
                 m_list = dna_indexes[m]
+                print('m_list', m_list)
                 len_m_list = len(m_list)
 
                 end_id = bisect.bisect_left(dna_indexes[m], end)
@@ -112,15 +119,7 @@ def go():
 
                 tt = time.time()
 
-
-
-                # for j in dna_indexes[m][st:en]:
-                # for j in dna_indexes[m]:
-                    # print(m, dna_indexes[m])
-                    # if start <= j <= end+1:
-                    #     to_add += genes_c[m] * health[j]
-
-                    to_add += genes_c[m] * all_healths[j]
+                to_add += all_healths[end_id] - all_healths[start_id]
 
                 ttt = time.time()
                 all_time += (ttt -tt)
@@ -128,7 +127,7 @@ def go():
                 cache_indexes[m] = to_add
                 h_total += to_add
             else:
-                # print('hit')
+                print('hit cache')
                 h_total += cache_indexes[m]
 
                 # for g, h in zip(genes[start: end + 1], health[start: end + 1]):

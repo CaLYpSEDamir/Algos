@@ -44,7 +44,7 @@ def go():
     for i, gen in enumerate(genes):
         dna_indexes[gen].append(i)
 
-    trie.build(patterns=set(genes))
+    trie.build(patterns=genes)
 
     print('after build tree', time.time() - t1)
 
