@@ -13,17 +13,17 @@ from trie import ACTrie
 
 # @profile
 def go():
-    # file = 'test_case_1823728075410_1823728075410.txt'
+    file = 'Test31_1823728075410_1823728075410.txt'
     # file = 'test_case_runtime_error_0_8652768.txt'
-    file = 'Test2_15806635_20688978289.txt'
+    # file = 'Test2_15806635_20688978289.txt'
     # file = 'simple_test.txt'
-
+    #
     dnas = []
     dna_indexes = defaultdict(list)
-    dna_healths = defaultdict(lambda: [0])
-    # dna_healths = defaultdict(list)
+    dna_healths = defaultdict(list)
     min_ = None
     max_ = None
+
 
     with open(file) as f:
         n = f.readline()
@@ -42,18 +42,22 @@ def go():
     t1 = time.time()
 
     trie = ACTrie()
-    genes_c = Counter(genes)
+    trie.build(patterns=set(genes))
 
     for i, gen in enumerate(genes):
+
         dna_indexes[gen].append(i)
-        dna_healths[gen].append(dna_healths[gen][-1] + all_healths[i])
 
-    # trie.build(patterns=set(genes))
-    trie.build(patterns=genes)
+        if not dna_healths[gen]:
+            dna_healths[gen].append(all_healths[i])
+        else:
+            dna_healths[gen].append(dna_healths[gen][-1] + all_healths[i])
 
-    print('after build tree', time.time() - t1)
+    # trie.build(patterns=genes)
 
-    print('dnas', len(dnas))
+    # print('after build tree', time.time() - t1)
+
+    # print('dnas', len(dnas))
     # exit(0)
     # return
 
@@ -61,7 +65,7 @@ def go():
 
     all_time = 0
 
-    for i, (dna, start, end) in enumerate(dnas[:1000]):
+    for i, (dna, start, end) in enumerate(dnas[:]):
         # print(i, dna, start, end)
         # print(i)
 
@@ -69,80 +73,62 @@ def go():
         matches = trie.find_matching(dna)
 
         # print(matches)
+        # print(set(matches))
 
         cache_indexes = dict()
 
-        for (m, ind) in matches:
-            print('m', m, ind)
-            # if m in cache_indexes:
-            #     h_total += all_healths[ind]
+        for m in matches:
 
-            if start <= ind <= end:
+            to_add = 0
 
-                h_total += all_healths[ind]
+            m_list = dna_indexes[m]
 
-        # print(h_total)
-        # h_total = 0
+            # print('m_list', m_list)
+            len_m_list = len(m_list)
 
-        # for m, ind in matches:
-        #     print('m', m)
-        #     # if m not in cache_indexes:
-        #     if 1:
-        #
-        #         m_list = dna_indexes[m]
-        #         # print('m_list', m_list)
-        #         len_m_list = len(m_list)
-        #
-        #         end_id = bisect.bisect_left(dna_indexes[m], end)
-        #
-        #         # l([5], 6) -> 1
-        #         if end_id == len_m_list:
-        #             end_id -= 1
-        #         else:
-        #             # l([5, 6], 6) -> 1 - normal
-        #
-        #             e = m_list[end_id]
-        #
-        #             if e != end:
-        #                 # l([7], 6) -> 0
-        #                 if end_id == 0:
-        #                     print('Skipping')
-        #                     continue
-        #                 # l([5], 6) -> 1
-        #                 end_id -= 1
-        #
-        #         start_id = bisect.bisect_left(dna_indexes[m], end)
-        #
-        #         # l([1], 2) -> 1
-        #         if start_id == len_m_list:
-        #             start_id -= 1
-        #         else:
-        #             # l([2, 3], 2) -> 0 - normal
-        #
-        #             s = m_list[start_id]
-        #
-        #             if s != start:
-        #                 # l([7], 6) -> 0
-        #                 if start_id == 0:
-        #                     print('Skipping')
-        #                     continue
-        #                 # l([5], 6) -> 1
-        #                 start_id -= 1
-        #
-        #         to_add = 0
-        #
-        #         # tt = time.time()
-        #
-        #         to_add += all_healths[end_id] - all_healths[start_id]
-        #
-        #         ttt = time.time()
-        #         all_time += (ttt -tt)
-        #
-        #         cache_indexes[m] = to_add
-        #         h_total += to_add
-        #     else:
-        #         print('hit cache')
-        #         h_total += cache_indexes[m]
+            end_id = bisect.bisect_left(m_list, end)
+
+            # l([0, 5], 6) -> 2
+            # вышли за правый предел
+            if end_id == len_m_list:
+                end_id -= 1
+            # индекса end нет, но есть больше него
+
+            elif end < m_list[end_id]:
+                end_id -= 1
+
+            # иначе l([0, 6], 6) -> 1 оставим как есть
+
+
+            start_id = bisect.bisect_left(m_list, start)
+            # print(m_list)
+            # break
+
+            first = m_list[0]
+            last = m_list[-1]
+            # вышли за границу r([0,4], 5)
+            if start > last or first > end:
+                # print(f'Skipping1')
+                # print(80 * '-')
+                continue
+            # print('start_id left', start_id)
+
+            # l([0,1,5], 0) -> 0
+            if start_id == 0:
+                h_total += dna_healths[m][end_id]
+
+                # print(f'Skipping2', h_total)
+                continue
+            # совпадение l([0,1,5], 1) -> 1, возьмем предыдущее
+            if start == m_list[start_id]:
+                start_id -= 1
+            # нет элемента, l([0,3,5], 1) -> 1, возьмем предыдущее
+            elif start < m_list[start_id]:
+                start_id -= 1
+
+            to_add += dna_healths[m][end_id] - dna_healths[m][start_id]
+
+            h_total += to_add
 
         # fixme refactor
         if min_ is None:
@@ -158,9 +144,8 @@ def go():
                 max_ = h_total
 
     print(min_, max_)
-    print(all_time)
 
-    print(time.time()-t1)
+    print(time.time() - t1)
 
 
 if __name__ == '__main__':
